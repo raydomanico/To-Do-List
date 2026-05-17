@@ -1,0 +1,47 @@
+    <!DOCTYPE html>
+    <head>
+
+    <title>TODO List</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+ <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css">    
+    </head>
+    <body>
+    <div id="page_container">
+    <h1>ToDo List</h1>
+   <h1 id="timer-dp">00</h1>
+    <input id="add-newtask" placeholder="What to do?" name="add-newtask">
+    <button id="add-newtask-btn">Add</button>
+    <div id="task-form-container">
+    <dialog id="task-form">Add This Task?
+<input id="task-description" name="task-description" placeholder="Describe Task">
+<input id="time-duration" type="number" name="time-duration">
+<input id="date-time-due" type="datetime-local" name="date-time-due">
+<button id="confirm-newtask-btn"> Confirm</button>
+<button id="cancel-newtask-btn"> Cancel</button>
+
+    </dialog>
+    </div>
+<p id="current-task-dp">Current Task</p>
+<ul id ="current-tasks-dp">
+
+</ul>
+<div id="tasks">
+
+        <div id="todo-task-container">
+            <p id="todo-task-dp">To-Do Tasks</p>
+            <ul id="todo-list">
+             
+            </ul>
+        </div>
+
+<div id="done-task-container">
+    <p id="done-task-dp">Done</p>
+    <ul id="done-list"></ul>
+        </div>
+</div>
+    </div>
+
+    </body>
