@@ -7,13 +7,27 @@ const timeDurationEl=document.getElementById("time-duration");
 const dateTimeDueEl=document.getElementById("date-time-due");
 const currentTasksDpEl=document.getElementById("current-tasks-dp");
 const doneListEl=document.getElementById("done-list");
+const editTaskel=document.getElementById("edit-task");
+
+const eTaskNameEl=document.getElementById("edit-task-name");
+const eTimeDurationEl=document.getElementById("edit-time-duration");
+const eDateTimeDueEl=document.getElementById("edit-date-time");
+const eTaskDescriptionEl=document.getElementById("edit-task-description");
+
+
+
+
+
 
 document.getElementById("add-newtask-btn").addEventListener("click", addNewTask);
 document.getElementById("cancel-newtask-btn").addEventListener("click", closeNewTask);
 document.getElementById("confirm-newtask-btn").addEventListener("click", confirmNewTask);
 
-const appState={
+document.getElementById("cancel-edit-btn").addEventListener("click", closeNewTask);
+document.getElementById("confirm-edit-btn").addEventListener("click", confirmEditTask);
 
+const appState={
+    editingTaskId:null,
     taskTimer:0,
     taskDescription:null,
     currentTasks:[],
@@ -32,6 +46,7 @@ document.getElementById("task-form").showModal();
 
 function closeNewTask(){
 document.getElementById("task-form").close();
+document.getElementById("edit-task").close();
 };
 
 function confirmNewTask()
@@ -72,10 +87,42 @@ function doneTask(event){
 
 appState.doneTasks.push(newCurrentTaskInfo);
 appState.currentTasks.splice(i,1);  
-console.log("dsadsa");
 renderUI();
     }
 }
+}
+
+function editTask(event){
+       document.getElementById("edit-task").showModal();
+for(let i=0; i<appState.todoTasks.length; i++){
+   const taskId = event.target.dataset.id;
+
+if(taskId==appState.todoTasks[i].id){
+
+eTaskDescriptionEl.value=appState.todoTasks[i].description;
+eTaskNameEl.value=appState.todoTasks[i].name;
+eDateTimeDueEl.value=appState.todoTasks[i].dateTimeDue;
+eTimeDurationEl.value=appState.todoTasks[i].timeDuration;
+appState.editingTaskId=taskId
+}
+}
+};
+
+function confirmEditTask(){
+const taskId=appState.editingTaskId;
+for(let i=0; i <appState.todoTasks.length;i++){
+    if(taskId==appState.todoTasks[i].id){
+        appState.todoTasks[i].name=eTaskNameEl.value;
+         appState.todoTasks[i].description=eTaskDescriptionEl.value;
+          appState.todoTasks[i].dateTimeDue=eDateTimeDueEl.value;
+           appState.todoTasks[i].timeDuration=eTimeDurationEl.value;
+
+    }
+
+}
+console.log(taskDescriptionEl.value)
+    closeNewTask();
+        renderUI();
 }
 
 function deleteTask(event){
@@ -84,12 +131,21 @@ function deleteTask(event){
         if(taskId==appState.todoTasks[i].id){
 
          appState.todoTasks.splice(i,1);
+         renderUI();
+        }
+    }
 
+      for(let i=0;i<appState.currentTasks.length;i++){
+        if(taskId==appState.currentTasks[i].id){
+
+         appState.currentTasks.splice(i,1);
          renderUI();
         }
     }
 
 }
+
+
 function renderUI(){
  
 
@@ -100,21 +156,26 @@ function renderUI(){
     const li=document.createElement("li");
     const buttonStart=document.createElement("button");
     const buttonDel=document.createElement("button");
+    const buttonEdit=document.createElement("button");
     
     buttonStart.addEventListener("click", startTask)
     buttonDel.addEventListener("click", deleteTask)
+    buttonEdit.addEventListener("click", editTask)
 
     buttonStart.textContent="+"; 
     buttonDel.textContent="-"; 
+    buttonEdit.textContent="edit";
 
     buttonStart.dataset.id=appState.todoTasks[i].id;
     buttonDel.dataset.id=appState.todoTasks[i].id;
+    buttonEdit.dataset.id=appState.todoTasks[i].id;
 
     li.textContent=newTask;
     console.log(appState.todoTasks.length);
     todoListEl.appendChild(li); 
     li.appendChild(buttonStart); 
     li.appendChild(buttonDel); 
+    li.appendChild(buttonEdit);
 
     }
 currentTasksDpEl.textContent="";
@@ -138,7 +199,6 @@ for(let i=0;i<appState.currentTasks.length;i++){
     
     li.appendChild(buttonStart);
     li.appendChild(buttonDel);
-    console.log(appState.currentTasks.length);
  
     currentTasksDpEl.appendChild(li);
     
