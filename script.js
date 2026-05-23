@@ -30,9 +30,9 @@ const appState={
     editingTaskId:null,
     taskTimer:0,
     taskDescription:null,
-    currentTasks:[],
-    todoTasks:[],   
-    doneTasks:[]
+    currentTasks:JSON.parse(localStorage.getItem('myCurrentTasks'))||[],
+    todoTasks:JSON.parse(localStorage.getItem("myTodoTasks"))||[],   
+    doneTasks:JSON.parse(localStorage.getItem("myDoneTasks"))||[]
 }
 
 function addNewTask(){
@@ -62,6 +62,7 @@ function confirmNewTask()
     appState.todoTasks.push(newTask);
     console.log(appState.todoTasks);
     document.getElementById("task-form").close();
+    syncStorage();
     renderUI();
 }
 
@@ -73,7 +74,7 @@ if(taskId==appState.todoTasks[i].id){
          
 appState.currentTasks.push(newTaskInfo)  ;
 appState.todoTasks.splice(i, 1);        
-
+syncStorage();
 renderUI();
     }
 }
@@ -87,6 +88,7 @@ function doneTask(event){
 
 appState.doneTasks.push(newCurrentTaskInfo);
 appState.currentTasks.splice(i,1);  
+syncStorage();
 renderUI();
     }
 }
@@ -118,9 +120,11 @@ for(let i=0; i <appState.todoTasks.length;i++){
            appState.todoTasks[i].timeDuration=eTimeDurationEl.value;
 
     }
+ 
 
 }
 console.log(taskDescriptionEl.value)
+   syncStorage();
     closeNewTask();
         renderUI();
 }
@@ -131,6 +135,7 @@ function deleteTask(event){
         if(taskId==appState.todoTasks[i].id){
 
          appState.todoTasks.splice(i,1);
+         syncStorage();
          renderUI();
         }
     }
@@ -139,9 +144,19 @@ function deleteTask(event){
         if(taskId==appState.currentTasks[i].id){
 
          appState.currentTasks.splice(i,1);
+         syncStorage();
          renderUI();
         }
     }
+    for (let i=0; i<appState.doneTasks.length;i++){
+        if(taskId==appState.doneTasks[i].id){
+
+            appState.doneTasks.splice(i,1);
+            syncStorage();
+            renderUI();
+        }
+    }
+      
 
 }
 
@@ -171,7 +186,6 @@ function renderUI(){
     buttonEdit.dataset.id=appState.todoTasks[i].id;
 
     li.textContent=newTask;
-    console.log(appState.todoTasks.length);
     todoListEl.appendChild(li); 
     li.appendChild(buttonStart); 
     li.appendChild(buttonDel); 
@@ -190,7 +204,7 @@ for(let i=0;i<appState.currentTasks.length;i++){
     buttonStart.dataset.id=appState.currentTasks[i].id;
     buttonDel.dataset.id=appState.currentTasks[i].id;
 
-    buttonStart.textContent="+"; 
+    buttonStart.textContent="Done"; 
     buttonDel.textContent="-"; 
 
     const li=document.createElement("li")  
@@ -203,10 +217,38 @@ for(let i=0;i<appState.currentTasks.length;i++){
     currentTasksDpEl.appendChild(li);
     
 }
+
+doneListEl.textContent="";
+for(let i=0;i<appState.doneTasks.length;i++){
+const newDoneTask=appState.doneTasks[i].name
+const buttonDel=document.createElement("button");
+const li=document.createElement("li");
+
+buttonDel.addEventListener("click", deleteTask);
+buttonDel.dataset.id=appState.doneTasks[i].id;
+buttonDel.textContent="Delete";
+
+li.textContent=newDoneTask
+li.appendChild(buttonDel)
+doneListEl.appendChild(li);
+}
+
+
+
+
+
+
     addNewTaskEl.value="";
     taskDescriptionEl.value="";
     timeDurationEl.value="";
     dateTimeDueEl.value="";
 }
 
+function syncStorage(){
+localStorage.setItem('myTodoTasks',JSON.stringify(appState.todoTasks));
+localStorage.setItem('myCurrentTasks',JSON.stringify(appState.currentTasks));
+localStorage.setItem('myDoneTasks',JSON.stringify(appState.doneTasks));
+}
+
 renderUI();
+
