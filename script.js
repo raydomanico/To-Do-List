@@ -52,11 +52,11 @@ document.getElementById("edit-task").close();
 function confirmNewTask()
 {
     const newTask={
-        id:appState.todoTasks.length + 1,
+        id:crypto.randomUUID(), 
         name:addNewTaskEl.value,
         description:taskDescriptionEl.value,
         timeDuration:timeDurationEl.value,
-        dateTimeDue:dateTimeDueEl.value
+        dateTimeDue:dateTimeDueEl.value 
 
     }
     appState.todoTasks.push(newTask);
@@ -66,10 +66,14 @@ function confirmNewTask()
     renderUI();
 }
 
+function uID(){
+const uniqueID=crypto.randomUUID(); 
+return;
+}
 function startTask(event){
     const taskId = event.target.dataset.id;
     for(let i=0;i<appState.todoTasks.length;i++){
-if(taskId==appState.todoTasks[i].id){
+if(taskId===appState.todoTasks[i].id){
           const newTaskInfo=appState.todoTasks[i];
          
 appState.currentTasks.push(newTaskInfo)  ;
@@ -83,7 +87,7 @@ renderUI();
 function doneTask(event){
     for(let i=0;i<appState.currentTasks.length;i++){
   const taskId = event.target.dataset.id;
-    if(taskId==appState.currentTasks[i].id){
+    if(taskId===appState.currentTasks[i].id){
         const newCurrentTaskInfo=appState.currentTasks[i];
 
 appState.doneTasks.push(newCurrentTaskInfo);
@@ -99,7 +103,7 @@ function editTask(event){
 for(let i=0; i<appState.todoTasks.length; i++){
    const taskId = event.target.dataset.id;
 
-if(taskId==appState.todoTasks[i].id){
+if(taskId===appState.todoTasks[i].id){
 
 eTaskDescriptionEl.value=appState.todoTasks[i].description;
 eTaskNameEl.value=appState.todoTasks[i].name;
@@ -113,7 +117,7 @@ appState.editingTaskId=taskId
 function confirmEditTask(){
 const taskId=appState.editingTaskId;
 for(let i=0; i <appState.todoTasks.length;i++){
-    if(taskId==appState.todoTasks[i].id){
+    if(taskId===appState.todoTasks[i].id){
         appState.todoTasks[i].name=eTaskNameEl.value;
          appState.todoTasks[i].description=eTaskDescriptionEl.value;
           appState.todoTasks[i].dateTimeDue=eDateTimeDueEl.value;
@@ -132,31 +136,29 @@ console.log(taskDescriptionEl.value)
 function deleteTask(event){
     const taskId = event.target.dataset.id;
     for(let i=0;i<appState.todoTasks.length;i++){
-        if(taskId==appState.todoTasks[i].id){
+        if(taskId===appState.todoTasks[i].id){
 
          appState.todoTasks.splice(i,1);
-         syncStorage();
-         renderUI();
+
         }
     }
 
       for(let i=0;i<appState.currentTasks.length;i++){
-        if(taskId==appState.currentTasks[i].id){
+        if(taskId===appState.currentTasks[i].id){
 
          appState.currentTasks.splice(i,1);
-         syncStorage();
-         renderUI();
+
         }
     }
     for (let i=0; i<appState.doneTasks.length;i++){
-        if(taskId==appState.doneTasks[i].id){
+        if(taskId===appState.doneTasks[i].id){
 
             appState.doneTasks.splice(i,1);
-            syncStorage();
-            renderUI();
+
         }
     }
-      
+      syncStorage();
+     renderUI();
 
 }
 
@@ -248,7 +250,9 @@ function syncStorage(){
 localStorage.setItem('myTodoTasks',JSON.stringify(appState.todoTasks));
 localStorage.setItem('myCurrentTasks',JSON.stringify(appState.currentTasks));
 localStorage.setItem('myDoneTasks',JSON.stringify(appState.doneTasks));
+
 }
 
 renderUI();
+
 
