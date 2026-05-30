@@ -9,16 +9,14 @@ const currentTasksDpEl=document.getElementById("current-tasks-dp");
 const doneListEl=document.getElementById("done-list");
 const editTaskel=document.getElementById("edit-task");
 
+
 const eTaskNameEl=document.getElementById("edit-task-name");
 const eTimeDurationEl=document.getElementById("edit-time-duration");
 const eDateTimeDueEl=document.getElementById("edit-date-time");
 const eTaskDescriptionEl=document.getElementById("edit-task-description");
 
-
-
-
-
-
+document.getElementById("pause-timer").addEventListener("click", pauseTimer);
+document.getElementById("play-timer").addEventListener("click", startTimer);
 document.getElementById("add-newtask-btn").addEventListener("click", addNewTask);
 document.getElementById("cancel-newtask-btn").addEventListener("click", closeNewTask);
 document.getElementById("confirm-newtask-btn").addEventListener("click", confirmNewTask);
@@ -27,12 +25,14 @@ document.getElementById("cancel-edit-btn").addEventListener("click", closeNewTas
 document.getElementById("confirm-edit-btn").addEventListener("click", confirmEditTask);
 
 const appState={
+    activeTaskId:null,
     editingTaskId:null,
     taskTimer:0,
     taskDescription:null,
     currentTasks:JSON.parse(localStorage.getItem('myCurrentTasks'))||[],
     todoTasks:JSON.parse(localStorage.getItem("myTodoTasks"))||[],   
-    doneTasks:JSON.parse(localStorage.getItem("myDoneTasks"))||[]
+    doneTasks:JSON.parse(localStorage.getItem("myDoneTasks"))||[],
+    timerInterval:null
 }
 
 function addNewTask(){
@@ -56,7 +56,8 @@ function confirmNewTask()
         name:addNewTaskEl.value,
         description:taskDescriptionEl.value,
         timeDuration:timeDurationEl.value,
-        dateTimeDue:dateTimeDueEl.value 
+        dateTimeDue:dateTimeDueEl.value,
+        timeElapsed:0
 
     }
     appState.todoTasks.push(newTask);
@@ -70,14 +71,17 @@ function uID(){
 const uniqueID=crypto.randomUUID(); 
 return;
 }
+
+
 function startTask(event){
     const taskId = event.target.dataset.id;
     for(let i=0;i<appState.todoTasks.length;i++){
 if(taskId===appState.todoTasks[i].id){
           const newTaskInfo=appState.todoTasks[i];
          
-appState.currentTasks.push(newTaskInfo)  ;
-appState.todoTasks.splice(i, 1);        
+appState.currentTasks.push(newTaskInfo);
+appState.todoTasks.splice(i, 1);
+       
 syncStorage();
 renderUI();
     }
@@ -162,9 +166,62 @@ function deleteTask(event){
 
 }
 
+//Time Logic
+function convertToSeconds(minutes){
+return parseInt(minutes*60);
+};
+function startTimer(event){
+const taskId=event.target.dataset.id;
+if (appState.timerInterval) {
+        clearInterval(appState.timerInterval);
+    
+    };
+
+for(let i=0;i<appState.currentTasks.length;i++){
+    if (taskId===appState.currentTasks[i].id){
+     
+       const currentTask= appState.currentTasks[i];
+       let timer=convertToSeconds(currentTask.timeDuration);
+
+
+let minutes=Math.floor(timer/60);
+let seconds=timer%60;
+
+let minutesDisp=minutes.toString().padStart(2,"0");
+let secondsDisp=seconds.toString().padStart(2,"0");
+
+timerDpEl.textContent=`${minutesDisp}:${secondsDisp}`;
+
+
+
+appState.timerInterval=setInterval(() =>{
+currentTask.timeElapsed++;
+timer--;
+let minutes=Math.floor(timer/60);
+let seconds=timer%60;
+
+let minutesDisp=minutes.toString().padStart(2,"0");
+let secondsDisp=seconds.toString().padStart(2,"0");
+
+
+timerDpEl.textContent=`${minutesDisp}:${secondsDisp}`;
+if(timer<=0){
+    clearInterval(appState.timerInterval);
+
+}
+}, 1000);
+
+}
+}
+};
+function pauseTimer(){
+    clearInterval(appState.timerInterval);
+}
+
+
+
 
 function renderUI(){
- 
 
     todoListEl.textContent="";
 
@@ -198,15 +255,19 @@ currentTasksDpEl.textContent="";
 for(let i=0;i<appState.currentTasks.length;i++){
 
     const buttonStart=document.createElement("button");
+    const buttonDone=document.createElement("button");
     const buttonDel=document.createElement("button");
-
-    buttonStart.addEventListener("click", doneTask);
+    
+    buttonStart.addEventListener("click", startTimer);
+    buttonDone.addEventListener("click", doneTask);
     buttonDel.addEventListener("click", deleteTask);
 
     buttonStart.dataset.id=appState.currentTasks[i].id;
+    buttonDone.dataset.id=appState.currentTasks[i].id;
     buttonDel.dataset.id=appState.currentTasks[i].id;
 
-    buttonStart.textContent="Done"; 
+    buttonStart.textContent="Start";
+    buttonDone.textContent="Done"; 
     buttonDel.textContent="-"; 
 
     const li=document.createElement("li")  
@@ -214,6 +275,7 @@ for(let i=0;i<appState.currentTasks.length;i++){
     li.textContent=newCurrentTask;
     
     li.appendChild(buttonStart);
+    li.appendChild(buttonDone);
     li.appendChild(buttonDel);
  
     currentTasksDpEl.appendChild(li);
