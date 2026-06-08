@@ -5,15 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
- <script src="script.js" defer></script>
+ <script src="script.js" async></script>
     <link rel="stylesheet" href="style.css">    
     </head>
     <body>
     <div id="page_container">
     <h1>ToDo List</h1>
-   <h1 id="timer-dp">00:00</h1>
-      <button id="play-timer">Play </button>
-   <button id="pause-timer">Pause</button>
+    <div id="timer-container">
+    <svg id="timer-svg" viewBox="0 0 120 120">
+        <circle id="timer-track" cx="60" cy="60" r="54" fill="none"/>
+        <circle id="timer-progress" cx="60" cy="60" r="54" fill="none"/>
+    </svg>
+    <h1 id="timer-dp">00:00:00</h1>
+</div>
+   <p id="timer-notification"></p>
+   <div id="timer-controls">
+      <button id="play-timer">▶ </button>
+   <button id="pause-timer">⏸</button>
+   </div>
    <p id="current-task-dp">Current Task</p>
 <ul id ="current-tasks-dp">
 
@@ -21,12 +30,12 @@
     <input id="add-newtask" placeholder="What to do?" name="add-newtask">
     <button id="add-newtask-btn">Add</button>
 
-    <div id="task-form-container">
+    <div id="task-form-cdxsacontainer">
     <dialog id="task-form">Add This Task?
 <input id="task-description" name="task-description" placeholder="Describe Task">
 <input id="time-duration" type="number" name="time-duration" placeholder="Duration(in minutes)">
 <input id="date-time-due" type="datetime-local" name="date-time-due">
-<button id="confirm-newtask-btn"> Confirm</butcton>
+<button id="confirm-newtask-btn"> Confirm</button>
 <button id="cancel-newtask-btn"> Cancel</button>
 
     </dialog>

@@ -8,6 +8,7 @@ const dateTimeDueEl=document.getElementById("date-time-due");
 const currentTasksDpEl=document.getElementById("current-tasks-dp");
 const doneListEl=document.getElementById("done-list");
 const editTaskel=document.getElementById("edit-task");
+const timerNotificationEl=document.getElementById("timer-notification");
 
 
 const eTaskNameEl=document.getElementById("edit-task-name");
@@ -27,12 +28,11 @@ document.getElementById("confirm-edit-btn").addEventListener("click", confirmEdi
 const appState={
     activeTaskId:null,
     editingTaskId:null,
-    taskTimer:0,
-    taskDescription:null,
     currentTasks:JSON.parse(localStorage.getItem('myCurrentTasks'))||[],
     todoTasks:JSON.parse(localStorage.getItem("myTodoTasks"))||[],   
     doneTasks:JSON.parse(localStorage.getItem("myDoneTasks"))||[],
-    timerInterval:null
+    timerInterval:null,
+    totalSeconds:null
 }
 
 function addNewTask(){
@@ -67,19 +67,18 @@ function confirmNewTask()
     renderUI();
 }
 
-function uID(){
-const uniqueID=crypto.randomUUID(); 
-return;
-}
 
 
 function startTask(event){
+    timerNotificationEl.textContent = "";
     const taskId = event.target.dataset.id;
     for(let i=0;i<appState.todoTasks.length;i++){
 if(taskId===appState.todoTasks[i].id){
           const newTaskInfo=appState.todoTasks[i];
          
 appState.currentTasks.push(newTaskInfo);
+
+
 appState.todoTasks.splice(i, 1);
        
 syncStorage();
@@ -89,6 +88,7 @@ renderUI();
 }
 
 function doneTask(event){
+    
     for(let i=0;i<appState.currentTasks.length;i++){
   const taskId = event.target.dataset.id;
     if(taskId===appState.currentTasks[i].id){
@@ -131,7 +131,7 @@ for(let i=0; i <appState.todoTasks.length;i++){
  
 
 }
-console.log(taskDescriptionEl.value)
+
    syncStorage();
     closeNewTask();
         renderUI();
@@ -171,55 +171,64 @@ function convertToSeconds(minutes){
 return parseInt(minutes*60);
 };
 function startTimer(event){
-const taskId=event.target.dataset.id;
+   const taskId = event.target.dataset.id || appState.activeTaskId;
+
+
 if (appState.timerInterval) {
         clearInterval(appState.timerInterval);
+        appState.timerInterval = null;
+        //clears existing Intervals
     
     };
 
 for(let i=0;i<appState.currentTasks.length;i++){
+
     if (taskId===appState.currentTasks[i].id){
-     
-       const currentTask= appState.currentTasks[i];
-       let timer=convertToSeconds(currentTask.timeDuration);
+        const currentTask= appState.currentTasks[i];
+        appState.activeTaskId = currentTask.id;
+        appState.totalSeconds = convertToSeconds(currentTask.timeDuration); 
+        if(!currentTask.timeDuration){
+        return;
+      }
+    
 
-
-let minutes=Math.floor(timer/60);
-let seconds=timer%60;
-
-let minutesDisp=minutes.toString().padStart(2,"0");
-let secondsDisp=seconds.toString().padStart(2,"0");
-
-timerDpEl.textContent=`${minutesDisp}:${secondsDisp}`;
-
+let timer=convertToSeconds(currentTask.timeDuration)-currentTask.timeElapsed;
+ 
 
 
 appState.timerInterval=setInterval(() =>{
+ if(timer<=0){
+         timerNotificationEl.textContent="Time's Up!🏁"
+timerDpEl.textContent=formatTime(timer);
+pauseTimer();
+        return;
+      } ;
+
 currentTask.timeElapsed++;
 timer--;
-let minutes=Math.floor(timer/60);
-let seconds=timer%60;
-
-let minutesDisp=minutes.toString().padStart(2,"0");
-let secondsDisp=seconds.toString().padStart(2,"0");
-
-
-timerDpEl.textContent=`${minutesDisp}:${secondsDisp}`;
-if(timer<=0){
-    clearInterval(appState.timerInterval);
-
-}
+const progress = timer / appState.totalSeconds;
+const offset = 339 * (1 - progress);
+document.getElementById("timer-progress").style.strokeDashoffset = offset;
+timerDpEl.textContent=formatTime(timer);
+if(currentTask.timeElapsed%10===0){
+    syncStorage();}
 }, 1000);
+}
 
 }
-}
+
 };
 function pauseTimer(){
     clearInterval(appState.timerInterval);
+   syncStorage();
 }
 
-
-
+function formatTime(seconds){
+let hour=Math.floor(seconds/3600);    
+let minutes=Math.floor(seconds/60)%60;
+let remainingSeconds=seconds%60;
+return `${hour.toString().padStart(2,"0")}:${minutes.toString().padStart(2,"0")}:${remainingSeconds.toString().padStart(2,"0")}`
+}
 
 function renderUI(){
 
@@ -235,6 +244,10 @@ function renderUI(){
     buttonStart.addEventListener("click", startTask)
     buttonDel.addEventListener("click", deleteTask)
     buttonEdit.addEventListener("click", editTask)
+
+    buttonStart.classList.add("btn-start");
+    buttonDel.classList.add("btn-del");
+    buttonEdit.classList.add("btn-edit");
 
     buttonStart.textContent="+"; 
     buttonDel.textContent="-"; 
@@ -253,6 +266,7 @@ function renderUI(){
     }
 currentTasksDpEl.textContent="";
 for(let i=0;i<appState.currentTasks.length;i++){
+    const li=document.createElement("li");
 
     const buttonStart=document.createElement("button");
     const buttonDone=document.createElement("button");
@@ -262,6 +276,10 @@ for(let i=0;i<appState.currentTasks.length;i++){
     buttonDone.addEventListener("click", doneTask);
     buttonDel.addEventListener("click", deleteTask);
 
+    buttonStart.classList.add("btn-start");
+    buttonDone.classList.add("btn-done");
+    buttonDel.classList.add("btn-del");
+
     buttonStart.dataset.id=appState.currentTasks[i].id;
     buttonDone.dataset.id=appState.currentTasks[i].id;
     buttonDel.dataset.id=appState.currentTasks[i].id;
@@ -270,10 +288,11 @@ for(let i=0;i<appState.currentTasks.length;i++){
     buttonDone.textContent="Done"; 
     buttonDel.textContent="-"; 
 
-    const li=document.createElement("li")  
-    newCurrentTask=appState.currentTasks[i].name;
-    li.textContent=newCurrentTask;
-    
+    const taskName=document.createElement("span")  
+    const newCurrentTask=appState.currentTasks[i].name;
+    taskName.textContent = newCurrentTask;
+
+    li.appendChild(taskName);
     li.appendChild(buttonStart);
     li.appendChild(buttonDone);
     li.appendChild(buttonDel);
@@ -297,11 +316,6 @@ li.appendChild(buttonDel)
 doneListEl.appendChild(li);
 }
 
-
-
-
-
-
     addNewTaskEl.value="";
     taskDescriptionEl.value="";
     timeDurationEl.value="";
@@ -313,8 +327,10 @@ localStorage.setItem('myTodoTasks',JSON.stringify(appState.todoTasks));
 localStorage.setItem('myCurrentTasks',JSON.stringify(appState.currentTasks));
 localStorage.setItem('myDoneTasks',JSON.stringify(appState.doneTasks));
 
+
 }
 
 renderUI();
+window.addEventListener("beforeunload", syncStorage);
 
 
